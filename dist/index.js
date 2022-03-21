@@ -54,7 +54,7 @@ function run() {
             }
         });
         prLabelList.forEach(element => {
-            if (typeof element === 'undefined' || element === null) {
+            if (!(typeof element === 'undefined' || element === null)) {
                 removeLabel(octokit, issueNumber, element);
             }
         });
