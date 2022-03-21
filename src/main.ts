@@ -10,63 +10,63 @@ async function run(): Promise<void> {
     const labelsStringList = core.getInput('labels-list')
     const issueNumber = parseInt(core.getInput('issue-number'), 10)
     const labelsArray = labelsStringList.split(separator)
-    console.log('jajaja: ', issueNumber)
-    console.log('jajaja1: ', labelsArray)
     const token = core.getInput('token')
     const octokit = github.getOctokit(token)
     let prLabelList: (string | undefined)[] = []
 
-    prLabelList = await getAllLabels(issueNumber, labelsArray, octokit)
-
-    labelsArray.forEach(element => {
-      removeLabel(octokit, issueNumber, element);
+    const allLabelList = await getAllLabels(issueNumber, octokit)
+    prLabelList = allLabelList.map(prLabel => {
+      if (labelsArray.includes(prLabel.name)) {
+        return prLabel.name
+      }
     })
-      
+
+    prLabelList.forEach(element => {
+      if( typeof element === 'undefined' || element === null ){
+        removeLabel(octokit, issueNumber, element!)
+      }
+    }) 
 }
 
 run()
 
-async function removeLabel(octokit: { [x: string]: any; } & { [x: string]: any; } & Octokit & RestEndpointMethods & { paginate: PaginateInterface; }, issueNumber: number, element: string): Promise<void> {
+async function removeLabel(octokit: RestEndpointMethods, issueNumber: number, element: string) {
   try {
     const response = await octokit.issues.removeLabel({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: issueNumber,
       name: element
-    });
+    })
   } catch (error) {
     throwError(error)
   }
 }
 
-async function getAllLabels(issueNumber: number, labelsArray: string[], octokit: { [x: string]: any; } & { [x: string]: any; } & Octokit & RestEndpointMethods & { paginate: PaginateInterface; }): Promise<(string | undefined)[]> {
-  if (!Number.isNaN(issueNumber) && labelsArray.length > 0) {
+async function getAllLabels(issueNumber: number, octokit: RestEndpointMethods) {
+  if (!Number.isNaN(issueNumber)) {
     try {
       const response = await octokit.issues.listLabelsOnIssue({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: issueNumber,
         per_page: 100
-      });
-      return response.data.map(prLabel => {
-        if (labelsArray.includes(prLabel.name)) {
-          return prLabel.name;
-        }
-      });
+      })
+      return response.data
     } catch (error) {
-      throwError(error);
+      throwError(error)
     }
   } else {
-    core.setFailed('Inputs could not be parsed properly');
+    core.setFailed('Inputs could not be parsed properly')
   }
   return []
 }
 
-function throwError(error: unknown) {
+function throwError(error: any) {
   if (error instanceof RequestError) {
-    core.setFailed(`Error (code ${error.status}): ${error.message}`);
+    core.setFailed(`Error (code ${error.status}): ${error.message}`)
   } else {
-    core.setFailed('Unknown Error');
+    core.setFailed('Unknown Error')
   }
 }
 

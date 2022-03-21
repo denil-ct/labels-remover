@@ -44,14 +44,19 @@ function run() {
         const labelsStringList = core.getInput('labels-list');
         const issueNumber = parseInt(core.getInput('issue-number'), 10);
         const labelsArray = labelsStringList.split(separator);
-        console.log('jajaja: ', issueNumber);
-        console.log('jajaja1: ', labelsArray);
         const token = core.getInput('token');
         const octokit = github.getOctokit(token);
         let prLabelList = [];
-        prLabelList = yield getAllLabels(issueNumber, labelsArray, octokit);
-        labelsArray.forEach(element => {
-            removeLabel(octokit, issueNumber, element);
+        const allLabelList = yield getAllLabels(issueNumber, octokit);
+        prLabelList = allLabelList.map(prLabel => {
+            if (labelsArray.includes(prLabel.name)) {
+                return prLabel.name;
+            }
+        });
+        prLabelList.forEach(element => {
+            if (typeof element === 'undefined' || element === null) {
+                removeLabel(octokit, issueNumber, element);
+            }
         });
     });
 }
@@ -71,9 +76,9 @@ function removeLabel(octokit, issueNumber, element) {
         }
     });
 }
-function getAllLabels(issueNumber, labelsArray, octokit) {
+function getAllLabels(issueNumber, octokit) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!Number.isNaN(issueNumber) && labelsArray.length > 0) {
+        if (!Number.isNaN(issueNumber)) {
             try {
                 const response = yield octokit.issues.listLabelsOnIssue({
                     owner: github.context.repo.owner,
@@ -81,11 +86,7 @@ function getAllLabels(issueNumber, labelsArray, octokit) {
                     issue_number: issueNumber,
                     per_page: 100
                 });
-                return response.data.map(prLabel => {
-                    if (labelsArray.includes(prLabel.name)) {
-                        return prLabel.name;
-                    }
-                });
+                return response.data;
             }
             catch (error) {
                 throwError(error);
