@@ -11,4 +11,6 @@ There are four inputs and both of them are required.
     description: 'A string of all labels that are to be checked with, separated with the passed separator'
   issue-number:
     description: 'Issue number'
+  new-labels-list:
+    description: 'Updated labels list'
 ```

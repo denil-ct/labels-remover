@@ -41,16 +41,25 @@ const request_error_1 = __nccwpck_require__(537);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const separator = core.getInput('separator');
-        const labelsStringList = core.getInput('labels-list');
         const issueNumber = parseInt(core.getInput('issue-number'), 10);
-        const labelsArray = labelsStringList.split(separator);
         const token = core.getInput('token');
+        const labelsStringList = core.getInput('labels-list');
+        const labelsArray = labelsStringList.split(separator);
+        const newLabelsStringList = core.getInput('new-labels-list');
+        const newLabelsArray = newLabelsStringList.split(separator);
         const octokit = github.getOctokit(token);
         let prLabelList = [];
         const allLabelList = yield getAllLabels(issueNumber, octokit);
         prLabelList = allLabelList.map(prLabel => {
             if (labelsArray.includes(prLabel.name)) {
                 return prLabel.name;
+            }
+        });
+        prLabelList.forEach((element, index) => {
+            if (!(typeof element === 'undefined' || element === null)) {
+                if (newLabelsArray.includes(element)) {
+                    prLabelList.splice(index, 1);
+                }
             }
         });
         prLabelList.forEach(element => {
