@@ -44,6 +44,8 @@ function run() {
         const labelsStringList = core.getInput('labels-list');
         const issueNumber = parseInt(core.getInput('issue-number'), 10);
         const labelsArray = labelsStringList.split(separator);
+        console.log('jajaja: ', issueNumber);
+        console.log('jajaja1: ', labelsArray);
         const token = core.getInput('token');
         const octokit = github.getOctokit(token);
         let prLabelList = [];
