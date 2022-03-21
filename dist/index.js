@@ -41,15 +41,31 @@ const request_error_1 = __nccwpck_require__(537);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const separator = core.getInput('separator');
-        const labelsStringList = core.getInput('labels-list');
         const issueNumber = parseInt(core.getInput('issue-number'), 10);
-        const labelsArray = labelsStringList.split(separator);
         const token = core.getInput('token');
+        const labelsStringList = core.getInput('labels-list');
+        const labelsArray = labelsStringList.split(separator);
+        const newLabelsStringList = core.getInput('new-labels-list');
+        const newLabelsArray = newLabelsStringList.split(separator);
         const octokit = github.getOctokit(token);
         let prLabelList = [];
-        prLabelList = yield getAllLabels(issueNumber, labelsArray, octokit);
-        labelsArray.forEach(element => {
-            removeLabel(octokit, issueNumber, element);
+        const allLabelList = yield getAllLabels(issueNumber, octokit);
+        prLabelList = allLabelList.map(prLabel => {
+            if (labelsArray.includes(prLabel.name)) {
+                return prLabel.name;
+            }
+        });
+        prLabelList.forEach((element, index) => {
+            if (!(typeof element === 'undefined' || element === null)) {
+                if (newLabelsArray.includes(element)) {
+                    prLabelList.splice(index, 1);
+                }
+            }
+        });
+        prLabelList.forEach(element => {
+            if (!(typeof element === 'undefined' || element === null)) {
+                removeLabel(octokit, issueNumber, element);
+            }
         });
     });
 }
@@ -69,9 +85,9 @@ function removeLabel(octokit, issueNumber, element) {
         }
     });
 }
-function getAllLabels(issueNumber, labelsArray, octokit) {
+function getAllLabels(issueNumber, octokit) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!Number.isNaN(issueNumber) && labelsArray.length > 0) {
+        if (!Number.isNaN(issueNumber)) {
             try {
                 const response = yield octokit.issues.listLabelsOnIssue({
                     owner: github.context.repo.owner,
@@ -79,11 +95,7 @@ function getAllLabels(issueNumber, labelsArray, octokit) {
                     issue_number: issueNumber,
                     per_page: 100
                 });
-                return response.data.map(prLabel => {
-                    if (labelsArray.includes(prLabel.name)) {
-                        return prLabel.name;
-                    }
-                });
+                return response.data;
             }
             catch (error) {
                 throwError(error);
