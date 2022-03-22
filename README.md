@@ -27,5 +27,5 @@ Example usage
           issue-number: ${{ github.event.number }}
           new-labels-list: 'Run Succeeded'
 ```
-This example will ensure that if `Run Succeeded` label is already present in the issue, it won't be removed. On the other hand if the `Run Succeeded` label is not present already in the PR, it will add it to the PR.
+This example will ensure that if `Run Succeeded` label is already present in the issue, it won't be removed. On the other hand if the `Run Succeeded` label is not present already in the PR, it will add it to the PR. It will also remove labels that are given in `labels-list` but not in `new-labels-list`.
 
