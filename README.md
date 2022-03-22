@@ -12,7 +12,7 @@ There are five inputs and all of them are required.
   issue-number:
     description: 'Issue number'
   new-labels-list:
-    description: 'Updated labels list'
+    description: 'Updated labels list to be added to PR'
 ```
 
 Example usage
@@ -27,5 +27,5 @@ Example usage
           issue-number: ${{ github.event.number }}
           new-labels-list: 'Run Succeeded'
 ```
-This example will ensure that if `Run Succeeded` label is already present in the issue, it won't be removed.
+This example will ensure that if `Run Succeeded` label is already present in the issue, it won't be removed. On the other hand if the `Run Succeeded` label is not present already in the PR, it will add it to the PR.
 
