@@ -21,30 +21,52 @@ async function run(): Promise<void> {
       }
     })
 
-    prLabelList.forEach((element, index) => {
-      if(!(typeof element === 'undefined' || element === null)){
-        if (newLabelsArray.includes(element)) {
+    prLabelList.forEach((label, index) => {
+      if(!(typeof label === 'undefined' || label === null)){
+        if (newLabelsArray.includes(label)) {
           prLabelList.splice(index,1)
+          const newLabelIndex = newLabelsArray.indexOf(label)
+          if (newLabelIndex !== -1) {
+            newLabelsArray.splice(newLabelIndex, 1)
+          }
         }
       }
     })
 
-    prLabelList.forEach(element => {
-      if(!(typeof element === 'undefined' || element === null)){
-        removeLabel(octokit, issueNumber, element!)
+    prLabelList.forEach(label => {
+      if(!(typeof label === 'undefined' || label === null)){
+        removeLabel(octokit, issueNumber, label!)
       }
-    }) 
+    })
+    
+    if (newLabelsArray.length > 0) {
+      addLabel(octokit, issueNumber, newLabelsArray)
+    }
+
 }
 
 run()
 
-async function removeLabel(octokit: RestEndpointMethods, issueNumber: number, element: string) {
+async function addLabel(octokit: RestEndpointMethods, issueNumber: number, labels: string[]) {
+  try {
+    const response = await octokit.issues.addLabels({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      issue_number: issueNumber,
+      labels: labels
+    })
+  } catch (error) {
+    throwError(error)
+  }
+}
+
+async function removeLabel(octokit: RestEndpointMethods, issueNumber: number, label: string) {
   try {
     const response = await octokit.issues.removeLabel({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: issueNumber,
-      name: element
+      name: label
     })
   } catch (error) {
     throwError(error)
