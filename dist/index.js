@@ -59,25 +59,47 @@ function run() {
             if (!(typeof element === 'undefined' || element === null)) {
                 if (newLabelsArray.includes(element)) {
                     prLabelList.splice(index, 1);
+                    const newLabelIndex = newLabelsArray.indexOf(element);
+                    if (newLabelIndex !== -1) {
+                        newLabelsArray.splice(newLabelIndex, 1);
+                    }
                 }
             }
         });
-        prLabelList.forEach(element => {
-            if (!(typeof element === 'undefined' || element === null)) {
-                removeLabel(octokit, issueNumber, element);
+        prLabelList.forEach(label => {
+            if (!(typeof label === 'undefined' || label === null)) {
+                removeLabel(octokit, issueNumber, label);
             }
         });
+        if (newLabelsArray.length > 0) {
+            addLabel(octokit, issueNumber, newLabelsArray);
+        }
     });
 }
 run();
-function removeLabel(octokit, issueNumber, element) {
+function removeLabel(octokit, issueNumber, label) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const response = yield octokit.issues.removeLabel({
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
                 issue_number: issueNumber,
-                name: element
+                name: label
+            });
+        }
+        catch (error) {
+            throwError(error);
+        }
+    });
+}
+function addLabel(octokit, issueNumber, labels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield octokit.issues.addLabels({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                issue_number: issueNumber,
+                labels: labels
             });
         }
         catch (error) {
